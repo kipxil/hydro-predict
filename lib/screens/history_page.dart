@@ -29,7 +29,7 @@ class HistoryPageState extends State<HistoryPage> {
     });
 
     try {
-      var response = await Dio().get("http://192.168.215.168:5000/history").timeout(const Duration(seconds: 5));
+      var response = await Dio().get("http://192.168.245.168:5000/history").timeout(const Duration(seconds: 5));
 
       if (response.data is Map<String, dynamic> && response.data.containsKey("error")) {
         throw Exception(response.data["error"]);
@@ -50,7 +50,7 @@ class HistoryPageState extends State<HistoryPage> {
 
   void deleteHistory(int id) async {
     try {
-      var response = await Dio().delete("http://192.168.215.168:5000/delete_history/$id");
+      var response = await Dio().delete("http://192.168.245.168:5000/delete_history/$id");
 
       if (response.statusCode == 200) {
         setState(() {
@@ -108,7 +108,7 @@ class HistoryPageState extends State<HistoryPage> {
 
   void deleteAllHistory() async {
     try {
-      var response = await Dio().delete("http://192.168.215.168:5000/delete_all_history");
+      var response = await Dio().delete("http://192.168.245.168:5000/delete_all_history");
 
       if (response.statusCode == 200) {
         setState(() {
@@ -233,7 +233,7 @@ class HistoryPageState extends State<HistoryPage> {
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
                                     child: Image.network(
-                                      "http://192.168.215.168:5000/static/simpan_gambar2/${historyList[index].imagePath}",
+                                      "http://192.168.245.168:5000/static/simpan_gambar2/${historyList[index].imagePath}",
                                       width: 80,
                                       height: 80,
                                       fit: BoxFit.cover,

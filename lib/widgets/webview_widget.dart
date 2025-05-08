@@ -9,7 +9,7 @@ class WebViewWidgetWrapper extends StatefulWidget {
 }
 
 class _WebViewWidgetWrapperState extends State<WebViewWidgetWrapper> {
-  final String baseUrl = 'http://192.168.215.168:5000'; // Ganti dengan IP Raspberry Pi
+  final String baseUrl = 'http://192.168.245.168:5000'; // Ganti dengan IP Raspberry Pi
   late final WebViewController _controller;
 
   @override

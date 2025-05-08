@@ -40,7 +40,7 @@ class _HomePage extends State<HomePage> {
     _isFetching = true;
 
     try {
-      final response = await Dio().get("http://192.168.215.168:5000/system_status").timeout(const Duration(seconds: 7));
+      final response = await Dio().get("http://192.168.245.168:5000/system_status").timeout(const Duration(seconds: 7));
 
       if (response.data is Map<String, dynamic> && response.data.containsKey("error")) {
         throw Exception(response.data["error"]);
