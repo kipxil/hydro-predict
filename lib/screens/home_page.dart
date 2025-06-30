@@ -2,11 +2,15 @@
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+// import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import '../widgets/temp_cache.dart';
 import '../widgets/status_widget.dart';
+import '../services/api_client.dart';
+// import '../services/api_config.dart';
+
+final _apiClient = ApiClient();
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,9 +44,10 @@ class _HomePage extends State<HomePage> {
     _isFetching = true;
 
     try {
-      final response = await Dio().get("http://192.168.245.168:5000/system_status").timeout(const Duration(seconds: 7));
+      final response = await _apiClient.get("/system_status");
 
-      if (response.data is Map<String, dynamic> && response.data.containsKey("error")) {
+      if (response.data is Map<String, dynamic> &&
+          response.data.containsKey("error")) {
         throw Exception(response.data["error"]);
       }
 
@@ -93,21 +98,20 @@ class _HomePage extends State<HomePage> {
       backgroundColor: Colors.grey[100],
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              _buildHeader(formattedDate, formattedTime),
-              const SizedBox(height: 16),
-              _buildMainCard(),
-              const SizedBox(height: 16),
-              _buildLastUpdated("12:16 WIB"),
-              const SizedBox(height: 16),
-              _buildCpuTempChart(cache.cpuTempHistory),
-              const SizedBox(height: 16),
-              _buildCpuUsageChart(cache.cpuUsage)
-            ],
-          )
-        ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildHeader(formattedDate, formattedTime),
+                const SizedBox(height: 16),
+                _buildMainCard(),
+                const SizedBox(height: 16),
+                _buildLastUpdated("12:16 WIB"),
+                const SizedBox(height: 16),
+                _buildCpuTempChart(cache.cpuTempHistory),
+                const SizedBox(height: 16),
+                _buildCpuUsageChart(cache.cpuUsage)
+              ],
+            )),
       ),
     );
   }
@@ -161,8 +165,14 @@ class _HomePage extends State<HomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _MiniStat(title: "CPU Usage", value: "${systemStatus?.cpuUsage.toStringAsFixed(2) ?? 'N/A'}%"),
-              _MiniStat(title: "RAM Usage", value: "${systemStatus?.ramUsage.toStringAsFixed(2) ?? 'N/A'}%"),
+              _MiniStat(
+                  title: "CPU Usage",
+                  value:
+                      "${systemStatus?.cpuUsage.toStringAsFixed(2) ?? 'N/A'}%"),
+              _MiniStat(
+                  title: "RAM Usage",
+                  value:
+                      "${systemStatus?.ramUsage.toStringAsFixed(2) ?? 'N/A'}%"),
               _MiniStat(title: "Uptime", value: systemStatus?.uptime ?? 'N/A'),
             ],
           )
@@ -182,7 +192,12 @@ class _HomePage extends State<HomePage> {
       child: Center(
         child: Text(
           "Raspberry Pi Status: ${systemStatus?.raspberryPiStatus ?? 'OFF'}",
-          style: TextStyle(color: systemStatus?.raspberryPiStatus == 'ON' ? Colors.green : Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: systemStatus?.raspberryPiStatus == 'ON'
+                  ? Colors.green
+                  : Colors.grey,
+              fontSize: 16,
+              fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -218,7 +233,8 @@ class _HomePage extends State<HomePage> {
                 lineTouchData: LineTouchData(
                   enabled: true,
                   touchTooltipData: LineTouchTooltipData(
-                    tooltipBgColor: Colors.teal.shade700, // 🎨 ubah warna tooltip
+                    tooltipBgColor:
+                        Colors.teal.shade700, // 🎨 ubah warna tooltip
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((spot) {
                         return LineTooltipItem(
@@ -235,32 +251,37 @@ class _HomePage extends State<HomePage> {
                 ),
                 gridData: const FlGridData(show: true),
                 titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      reservedSize: 40,
-                      getTitlesWidget: (value, _) =>
-                          Text(value.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 1,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, _) => Text(
+                            value.toStringAsFixed(1),
+                            style: const TextStyle(fontSize: 12)),
+                      ),
                     ),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      getTitlesWidget: (value, _) {
-                        int realIndex = cache.xStartTemp + value.toInt(); // Hitung iterasi sebenarnya
-                        return Text(realIndex.toString(), style: const TextStyle(fontSize: 12));
-                      },
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 1,
+                        getTitlesWidget: (value, _) {
+                          int realIndex = cache.xStartTemp +
+                              value.toInt(); // Hitung iterasi sebenarnya
+                          return Text(realIndex.toString(),
+                              style: const TextStyle(fontSize: 12));
+                        },
+                      ),
                     ),
-                  ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false))
-                ),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false))),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: List.generate(data.length, (i) => FlSpot(i.toDouble(), data[i])),
+                    spots: List.generate(
+                        data.length, (i) => FlSpot(i.toDouble(), data[i])),
                     isCurved: true,
                     color: Colors.teal,
                     dotData: const FlDotData(show: true),
@@ -304,7 +325,8 @@ class _HomePage extends State<HomePage> {
                 lineTouchData: LineTouchData(
                   enabled: true,
                   touchTooltipData: LineTouchTooltipData(
-                    tooltipBgColor: Colors.teal.shade700, // 🎨 ubah warna tooltip
+                    tooltipBgColor:
+                        Colors.teal.shade700, // 🎨 ubah warna tooltip
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((spot) {
                         return LineTooltipItem(
@@ -321,32 +343,37 @@ class _HomePage extends State<HomePage> {
                 ),
                 gridData: const FlGridData(show: true),
                 titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      reservedSize: 40,
-                      getTitlesWidget: (value, _) =>
-                          Text(value.toStringAsFixed(1), style: const TextStyle(fontSize: 12)),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 1,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, _) => Text(
+                            value.toStringAsFixed(1),
+                            style: const TextStyle(fontSize: 12)),
+                      ),
                     ),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      getTitlesWidget: (value, _) {
-                        int realIndex = cache.xStartUsage + value.toInt(); // Hitung iterasi sebenarnya
-                        return Text(realIndex.toString(), style: const TextStyle(fontSize: 12));
-                      },
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 1,
+                        getTitlesWidget: (value, _) {
+                          int realIndex = cache.xStartUsage +
+                              value.toInt(); // Hitung iterasi sebenarnya
+                          return Text(realIndex.toString(),
+                              style: const TextStyle(fontSize: 12));
+                        },
+                      ),
                     ),
-                  ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false))
-                ),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false))),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: List.generate(data.length, (i) => FlSpot(i.toDouble(), data[i])),
+                    spots: List.generate(
+                        data.length, (i) => FlSpot(i.toDouble(), data[i])),
                     isCurved: true,
                     color: Colors.teal,
                     dotData: const FlDotData(show: true),
@@ -373,9 +400,12 @@ class _MiniStat extends StatelessWidget {
       children: [
         Text(value,
             style: const TextStyle(
-                fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text(title, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        Text(title,
+            style: const TextStyle(color: Colors.white70, fontSize: 13)),
       ],
     );
   }
